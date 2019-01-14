@@ -1,0 +1,270 @@
+<html>
+
+<head>
+    <title> PokePong </title>
+    <script type="text/javascript" src="phaser.js"></script>
+    <style type="text/css">
+        body {
+            margin: 0;
+        }
+
+        h1 {
+            font-family: sans-serif;
+            text-align: justify;
+
+        }
+
+    </style>
+    <h1>POKEPONG!</h1>
+</head>
+
+<body>
+
+
+
+    <script type="text/javascript">
+        var game = new Phaser.Game(800, 400, Phaser.AUTO, '', {
+            preload: preload,
+            create: create,
+            update: update
+        });
+
+        var paddle1;
+        var paddle2;
+        var ball;
+        var ball_launched;
+        var ball_veloicty;
+
+        var score1_text;
+        var score2_text;
+
+        var score1;
+        var score2;
+        var game_over_text
+
+var upKey;
+var downKey;
+        
+        
+
+        function preload() {
+            //console.log("Preload called");
+            game.load.image("paddle", "assets/paddle1.png");
+            game.load.image("ball", "assets/pokeball1.png");
+            game.load.image("background", "assets/Background2.png");
+            game.load.bitmapFont('font', 'assets/font.png', 'assets/font.xml');
+
+            game.load.audio('hit_1', ['assets/blip.wav']);
+            game.load.audio('hit_2', ['assets/blip.wav']);
+
+        }
+
+        function create() {
+
+
+
+            game.add.sprite(0, 0, "background");
+            //console.log("Create called");
+            ball_launched = false;
+            ball_veloicty = 400;
+            paddle1 = create_paddle(0, game.world.centerY);
+            paddle2 = create_paddle(game.world.width - 8, game.world.centerY);
+            ball = create_ball(game.world.centerX, game.world.centerY);
+
+
+            game.input.onDown.add(launch_ball, this);
+
+            /* score1_text = game.add.text(64, 64, '0', {
+                 font: "64px Avant Garde",
+                 fill: "#ffffff",
+                 align: "center"
+             });
+
+             score2_text = game.add.text(game.world.width - 64, 64, '0', {
+                 font: "64px Avant Garde",
+                 fill: "#ffffff",
+                 align: "center"
+             });*/
+
+            score1_text = game.add.bitmapText(64, 64, 'font', '0', 32);
+            score2_text = game.add.bitmapText(game.world.width - 64, 64, 'font', '0', 32);
+
+
+
+
+            score1 = 0;
+            score2 = 0;
+
+
+
+            this.upKey = game.input.keyboard.addKey(Phaser.Keyboard.UP);
+            this.downKey = game.input.keyboard.addKey(Phaser.Keyboard.DOWN);
+
+
+
+        }
+
+        function update() {
+            //console.log("Update called");
+            control_paddle(paddle1, game.input.y);
+            game.physics.arcade.collide(paddle1, ball, function() {
+                game.sound.play('hit_1');
+            });
+            game.physics.arcade.collide(paddle2, ball, function() {
+                game.sound.play('hit_2');
+            });
+
+            if (ball.body.blocked.left) {
+                if (score2 === 4) {
+                    game_over();
+                }
+                score2 += 1;
+            } else if (ball.body.blocked.right) {
+
+                if (score1 === 4) {
+                    game_over();
+                }
+                score1 += 1;
+            }
+
+            paddle2.body.velocity.setTo(ball.body.velocity.y)
+            paddle2.body.velocity.x = 0;
+            paddle2.body.maxVelocity.y = 250;
+
+            score1_text.text = score1;
+            score2_text.text = score2;
+            
+            
+            
+             if (this.upKey.isDown)
+    {
+       paddle1.body.velocity.x = -200;
+		
+    } 
+	
+	
+    if (this.downKey.isDown)
+    {
+        paddle1.body.velocity.x = 200;
+		
+    }
+	
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+
+        }
+
+        function create_paddle(x, y) {
+            //console.log("Create paddle called");
+            var paddle = game.add.sprite(x, y, 'paddle')
+            paddle.anchor.setTo(0.5, 0.5);
+            game.physics.arcade.enable(paddle);
+            paddle.body.collideWorldBounds = true;
+            paddle.body.immovable = true;
+            paddle.scale.setTo(0.5, 0.5);
+            return paddle;
+
+        }
+
+        function control_paddle(paddle, y) {
+            //console.log("Control paddle called");
+            paddle.y = y;
+
+            if (paddle.y < paddle.height / 2) {
+                paddle.y = paddle.height / 2;
+
+
+            } else if (paddle.y > game.world.height - paddle.height / 2) {
+                paddle.y = game.world.height - paddle.height / 2;
+            }
+
+        }
+
+        function create_ball(x, y) {
+            console.log("Create Ball called");
+            var ball = game.add.sprite(x, y, "ball");
+            ball.anchor.setTo(0.5, 0.5);
+
+            game.physics.arcade.enable(ball);
+
+
+
+
+            console.log(ball);
+
+
+            ball.body.collideWorldBounds = true;
+
+            ball.body.bounce.setTo(1, 1);
+
+            return ball;
+
+        }
+
+        function launch_ball() {
+
+            console.log("Launch ball called");
+
+            console.log(ball);
+            console.log(game);
+
+
+            if (ball_launched) {
+                ball.x = game.world.centerX;
+                ball.y = game.world.centerY;
+                ball.body.velocity.setTo(0, 0);
+                ball_launched = false;
+            } else {
+                ball.body.velocity.x = -ball_veloicty;
+                ball.body.velocity.y = ball_veloicty;
+                ball_launched = true;
+            }
+
+
+        }
+
+
+        //game over function which takes no paraemters
+        //Text appear game over
+        function game_over() {
+            game.paused = true;
+            game_over_text = game.add.bitmapText(game.world.width / 2, game.world.height / 2, 'font', 'Game Over!', 32);
+            game_over_text.anchor.setTo(0.5);
+
+        }
+
+    </script>
+
+
+
+
+
+
+
+
+
+
+</body>
+
+</html>
